@@ -14,11 +14,9 @@ class _StepsScreenState extends State<StepsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    void addSteps(results) {
-      results.forEach((result) => {_totalSteps = _totalSteps += result.value});
-
+    void addSteps(List<FitData> results) {
       setState(() {
-        _totalSteps = _totalSteps;
+        results.where((data) => !data.userEntered).forEach((result) => _totalSteps += result.value.round());
       });
     }
 
@@ -29,10 +27,13 @@ class _StepsScreenState extends State<StepsScreen> {
     }
 
     void read() async {
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+
       final results = await FitKit.read(
         DataType.STEP_COUNT,
-        dateFrom: DateTime.now().subtract(Duration(days: 1)),
-        dateTo: DateTime.now(),
+        dateFrom: startOfDay,
+        dateTo: now,
       );
       // print(results);
       clearSteps();
@@ -48,13 +49,17 @@ class _StepsScreenState extends State<StepsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("Steps from today",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            Text('$_totalSteps Steps',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Steps from today",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '$_totalSteps Steps',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 30),
             RaisedButton(
-              onPressed: () => read(),
+              onPressed: read,
               child: const Text('Read steps', style: TextStyle(fontSize: 20)),
             ),
           ],
